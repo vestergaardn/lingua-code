@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
-import { supabaseAdmin } from "./supabase"
+import { getSupabaseAdmin } from "./supabase"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -16,18 +16,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (account?.provider === "github" && account.access_token) {
-        await supabaseAdmin.from("companies").upsert({
+        await getSupabaseAdmin().from("companies").upsert({
           github_id: String(account.providerAccountId),
-          github_login: user.name ?? "",
+          github_login: (profile as any)?.login ?? user.name ?? "",
           github_token: account.access_token,
         }, { onConflict: "github_id" })
       }
       return true
     },
     async session({ session, token }) {
-      const { data } = await supabaseAdmin
+      const { data } = await getSupabaseAdmin()
         .from("companies")
         .select("id, github_login")
         .eq("github_id", String(token.sub))
