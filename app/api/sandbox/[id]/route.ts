@@ -1,0 +1,16 @@
+import { Sandbox } from "@e2b/code-interpreter"
+import { NextResponse } from "next/server"
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params
+  try {
+    const sandbox = await Sandbox.connect(id)
+    await sandbox.kill()
+  } catch {
+    // Already dead — fine
+  }
+  return NextResponse.json({ success: true })
+}
