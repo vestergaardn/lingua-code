@@ -2,6 +2,7 @@ import { Sandbox } from "@e2b/code-interpreter"
 import { getSupabaseAdmin } from "@/lib/supabase"
 import { decrypt } from "@/lib/crypto"
 import { corsResponse, corsOptions } from "@/lib/cors"
+import { INTROSPECT_CMD, parseIntrospection } from "@/lib/sandbox-introspect"
 import path from "path"
 
 export const maxDuration = 120
@@ -92,6 +93,19 @@ export async function POST(req: Request) {
       return corsResponse({ error: `Repo extract failed: ${msg}` }, { status: 500 })
     }
 
+    // Introspect the extracted repo to validate and detect project type
+    const introspectResult = await sandbox.commands.run(INTROSPECT_CMD, { timeoutMs: 10_000 })
+    const projectInfo = parseIntrospection(introspectResult.stdout)
+
+    if (!projectInfo.hasPackageJson && !project.install_command) {
+      console.error("[sandbox/create] No package.json found in repo root")
+      await sandbox.kill()
+      return corsResponse(
+        { error: "No package.json found in repository root. If your project uses a subdirectory or different package manager, configure a custom install command in project settings." },
+        { status: 500 },
+      )
+    }
+
     // Init a git repo so the submit route can use git diff to detect changes
     try {
       await sandbox.commands.run(
@@ -128,16 +142,24 @@ export async function POST(req: Request) {
       return corsResponse({ error: `Install failed: ${msg.slice(-500)}` }, { status: 500 })
     }
 
-    // Step 4: Start dev server in background
+    // Step 4: Start dev server in background and wait for it to be ready
+    const port = project.dev_port ?? 3000
     sandbox.commands.run(project.dev_command || "npm run dev", { cwd: "/home/user/app", background: true })
-    await new Promise((r) => setTimeout(r, 5000))
 
-    const previewHost = sandbox.getHost(project.dev_port ?? 3000)
+    // Poll until the server responds (up to 15s, exits early on success)
+    await sandbox.commands.run(
+      `for i in $(seq 1 15); do curl -sf -o /dev/null http://localhost:${port} 2>/dev/null && exit 0; sleep 1; done; exit 1`,
+      { timeoutMs: 20_000 },
+    )
+    // Non-fatal if polling fails — server may need the first real request to finish starting
+
+    const previewHost = sandbox.getHost(port)
     const previewUrl = `https://${previewHost}`
 
     return corsResponse({
       sandboxId: sandbox.sandboxId,
       previewUrl,
+      projectInfo,
     })
   } catch (error) {
     console.error("[sandbox/create] Error:", error)
