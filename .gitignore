@@ -44,3 +44,4 @@ next-env.d.ts
 # widget
 /widget/node_modules
 .env*.local
+.gstack/
