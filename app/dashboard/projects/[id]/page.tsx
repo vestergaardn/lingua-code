@@ -1,5 +1,6 @@
 import { getSupabaseAdmin } from "@/lib/supabase"
 import { auth } from "@/lib/auth"
+import type { Session } from "next-auth"
 import { redirect } from "next/navigation"
 import { revalidatePath } from "next/cache"
 import { encrypt, decrypt } from "@/lib/crypto"
@@ -32,7 +33,7 @@ export default async function ProjectDetail({
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? ""
   const scriptTag = `<script src="${appUrl}/widget.js" data-project-id="${project.script_tag_id}"></script>`
 
-  async function verifyOwnership(s: NonNullable<Awaited<ReturnType<typeof auth>>>) {
+  async function verifyOwnership(s: Session) {
     const { data } = await getSupabaseAdmin()
       .from("projects")
       .select("id")
