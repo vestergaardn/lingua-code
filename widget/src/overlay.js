@@ -158,6 +158,7 @@ export function openOverlay(projectId, onClose) {
         padding: 16px;
         display: flex;
         flex-direction: column;
+        justify-content: flex-end;
         gap: 8px;
       }
       .lc-msg {
@@ -357,11 +358,19 @@ export function openOverlay(projectId, onClose) {
   })
 
   // Collapse / expand panel
-  overlay.querySelector("#lc-chat-toggle").addEventListener("click", () => {
+  const chatToggle = overlay.querySelector("#lc-chat-toggle")
+  function updateToggleStyle() {
+    const isCollapsed = panel.classList.contains("collapsed")
+    chatToggle.style.opacity = isCollapsed ? "1" : "0.6"
+    chatToggle.style.background = isCollapsed ? "rgba(255,255,255,0.15)" : "none"
+  }
+  chatToggle.addEventListener("click", () => {
     panel.classList.toggle("collapsed")
+    updateToggleStyle()
   })
   overlay.querySelector("#lc-collapse-btn").addEventListener("click", () => {
     panel.classList.add("collapsed")
+    updateToggleStyle()
   })
 
   function closeOverlay() {
