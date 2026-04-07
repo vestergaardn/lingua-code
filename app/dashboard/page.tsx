@@ -22,7 +22,7 @@ export default async function Dashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Your Projects</h1>
         <Link
-          href="/dashboard/projects/new"
+          href="/create-project"
           className="bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5 active:scale-[0.98]"
         >
           <Plus size={16} />
@@ -36,7 +36,7 @@ export default async function Dashboard() {
           <p className="text-zinc-500 font-medium">No projects yet</p>
           <p className="text-zinc-400 text-sm mt-1">Create one to get started.</p>
           <Link
-            href="/dashboard/projects/new"
+            href="/create-project"
             className="mt-4 bg-zinc-900 hover:bg-zinc-800 text-white px-4 py-2 rounded-lg text-sm font-medium active:scale-[0.98]"
           >
             Create Project
