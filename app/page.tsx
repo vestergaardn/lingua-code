@@ -46,7 +46,7 @@ export default async function Home() {
           <form
             action={async () => {
               "use server"
-              await signIn("github", { redirectTo: "/dashboard" })
+              await signIn("github", { redirectTo: "/create-project" })
             }}
           >
             <button
