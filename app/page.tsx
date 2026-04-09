@@ -37,8 +37,9 @@ export default async function Home() {
         </div>
 
         {/* Tagline */}
-        <p className="mt-6 max-w-[400px] text-center text-white text-[34px] font-normal leading-snug">
-          Let users improve your application with zero access to code.
+        <p className="mt-6 max-w-[400px] text-center text-white/90 text-[34px] font-normal leading-snug animate-fade-in">
+          Let users improve your application with{" "}
+          <span className="text-white font-medium">zero access to code</span>.
         </p>
 
         {/* Buttons */}
